@@ -29,7 +29,7 @@
     </div>
     <!-- 登录按钮 -->
     <div class="login_btn">
-      <button>登录</button>
+      <button :disabled="isClick" @click="handleLogin">登录</button>
     </div>
   </div>
 </template>
@@ -47,13 +47,29 @@ export default {
       disabled: false,
     };
   },
+  computed: {
+    isClick() {
+      if (!this.phone || !this.verifyCode) {
+        return true;
+      } else return false;
+    },
+  },
   methods: {
+    // 获取验证码
     getVerifyCode() {
       if (this.validataPhone()) {
         this.validataBtn();
+        // 发送网络请求
+        this.$axios
+          .post("/api/posts/sms_send", {
+            phone: this.phone,
+          })
+          .then((res) => {
+            console.log(res);
+          });
       }
-      // 发送网络请求
     },
+    // 点击获取验证码后倒计时
     validataBtn() {
       let time = 40;
       let timer = setInterval(() => {
@@ -68,6 +84,7 @@ export default {
         }
       }, 1000);
     },
+    // 检测手机输入格式
     validataPhone() {
       if (!this.phone) {
         this.error = {
@@ -85,6 +102,28 @@ export default {
         };
         return true;
       }
+    },
+    // 登录按钮
+    handleLogin() {
+      // 取消错误提醒
+      this.error = {};
+      // 发送请求
+      this.$axios
+        .post("/api/posts/sms_back", {
+          phone: this.phone,
+          code: this.verifyCode,
+        })
+        .then((res) => {
+          // 检验成功 设置登录状态 并 跳转到 /
+          localStorage.setItem("ele_login", true);
+          this.$router.push("/");
+        })
+        .catch((err) => {
+          // 检验失败返回错误信息
+          this.error = {
+            code: err.response.data.msg,
+          };
+        });
     },
   },
   components: {
