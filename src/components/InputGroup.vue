@@ -15,8 +15,8 @@
       <button v-if="btnTitle" :disabled="disabled" @click="$emit('btnClick')">
         {{ btnTitle }}
       </button>
-      <!-- 错误提醒 -->
     </div>
+    <!-- 错误提醒 -->
     <div v-if="error" class="invalid-feedback">{{ error }}</div>
   </div>
 </template>
